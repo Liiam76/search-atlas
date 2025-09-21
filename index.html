@@ -25,9 +25,7 @@
   th{font-weight:700;color:#213547}
   .small{font-size:13px;color:var(--muted)}
   .btn{display:inline-block;background:var(--accent);color:#fff;padding:9px 14px;border-radius:8px;text-decoration:none;font-weight:600;border:0;cursor:pointer}
-  .btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--glass)}
-  .kpi-row{display:flex;gap:12px;flex-wrap:wrap}
-  .kpi{background:#fff;border-radius:8px;padding:8px 12px;box-shadow:0 1px 0 rgba(2,6,23,0.03);font-weight:700}
+  .btn.ghost{display:inline-block;background:transparent;color:var(--accent);padding:9px 14px;border-radius:8px;border:1px solid var(--glass);text-decoration:none;font-weight:600;cursor:pointer}
   .pill{display:inline-block;padding:6px 8px;border-radius:999px;background:#eef2f7;font-weight:700}
   .muted{color:var(--muted)}
   .row{display:flex;justify-content:space-between;align-items:center;gap:12px}
@@ -56,7 +54,7 @@
           <div class="meta">Search Atlas • no-reply@searchatlas.com • Sep 21, 2025</div>
         </div>
       </div>
-      <div class="meta small">Hi John — summary for <strong>example.com</strong></div>
+      <div class="meta small"></div>
     </div>
 
     <div class="body">
@@ -65,10 +63,13 @@
         <div class="row" style="margin-bottom:8px">
           <h3 id="rank-heading">Top Keywords & Rank Changes</h3>
           <div>
-            <span class="small muted">Period: Sep 14–21, 2025</span>
-            &nbsp;&nbsp;
             <button class="btn" onclick="openModal('dashboardModal')">View Dashboard</button>
           </div>
+        </div>
+
+        <!-- NEW: moved greeting/period message (per request) -->
+        <div style="margin-bottom:10px" class="small muted">
+          Hi John, summary for example.com for this period
         </div>
 
         <table aria-describedby="rank-note">
@@ -83,11 +84,6 @@
         </table>
 
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;flex-wrap:wrap">
-          <div class="kpi-row">
-            <div class="kpi">Avg session time: <span class="muted">45m → 20m goal</span></div>
-            <div class="kpi">Weekly completion: <span class="muted">40% → 60% goal</span></div>
-            <div class="kpi">Churn impact: <span class="muted">5% → 2% goal</span></div>
-          </div>
           <div><a class="btn ghost" href="#" onclick="openModal('oppsModal');return false">Opportunities</a></div>
         </div>
       </section>
@@ -96,20 +92,57 @@
       <section class="section" aria-labelledby="logs-heading">
         <div class="row" style="margin-bottom:8px">
           <h3 id="logs-heading">Top Change Logs (Highlights)</h3>
-          <span class="small muted">Top 3 actions in this period</span>
+          <span class="small muted">Top changes in this period</span>
         </div>
 
         <table>
-          <thead><tr><th>Date</th><th>Keyword</th><th>Change</th><th>By</th><th>Result</th></tr></thead>
+          <thead>
+            <tr>
+              <th>Date/Time (UTC)</th>
+              <th>Old Keyword</th>
+              <th>New Keyword</th>
+              <th>Previous Rank</th>
+              <th>New Rank</th>
+              <th>Updated By</th>
+              <th>Notes</th>
+              <th>Action</th>
+            </tr>
+          </thead>
           <tbody>
-            <tr><td>2025-09-19</td><td>seo audit tool</td><td>renamed → seo audit tool</td><td>John D.</td><td><span class="pill">Improved</span></td></tr>
-            <tr><td>2025-09-18</td><td>backlink checker</td><td>tag update (AI)</td><td>System (AI)</td><td><span class="pill">Dropped</span></td></tr>
-            <tr><td>2025-09-15</td><td>local seo guide</td><td>meta description update</td><td>Sarah K.</td><td><span class="pill">Improved</span></td></tr>
+            <tr>
+              <td>2025-09-19 14:32</td>
+              <td>Seo auditing software</td>
+              <td>seo audit tool</td>
+              <td>#12</td>
+              <td>#8</td>
+              <td>John D.</td>
+              <td>Improved after new content</td>
+              <td><button style="background:#dc2626;color:#fff;border:0;padding:6px 10px;border-radius:6px;cursor:pointer">Revert</button></td>
+            </tr>
+            <tr>
+              <td>2025-09-18 09:05</td>
+              <td>Check your back links</td>
+              <td>backlink checker</td>
+              <td>#4</td>
+              <td>#10</td>
+              <td>System (AI)</td>
+              <td>Automated AI improvements</td>
+              <td><button style="background:#dc2626;color:#fff;border:0;padding:6px 10px;border-radius:6px;cursor:pointer">Revert</button></td>
+            </tr>
+            <tr>
+              <td>2025-09-15 20:11</td>
+              <td>Seo guide</td>
+              <td>local seo guide</td>
+              <td>#45</td>
+              <td>#22</td>
+              <td>Sarah K.</td>
+              <td>Updated meta description</td>
+              <td><button style="background:#dc2626;color:#fff;border:0;padding:6px 10px;border-radius:6px;cursor:pointer">Revert</button></td>
+            </tr>
           </tbody>
         </table>
 
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
-          <div class="small muted">Showing top 3 of X changes • <a href="#" onclick="openModal('changesModal');return false">See full logs</a></div>
+        <div style="display:flex;justify-content:flex-end;align-items:center;margin-top:12px">
           <div><button class="btn" onclick="openModal('changesModal')">View Logs</button></div>
         </div>
       </section>
@@ -154,8 +187,9 @@
         </div>
       </section>
 
+      <!-- Replaced bottom text with unsubscribe (per request) -->
       <div style="padding:8px 6px 20px 6px;text-align:center">
-        <div class="small muted">This summary follows search engine best practices and avoids keyword stuffing. <a href="#" onclick="openModal('helpModal');return false">Learn more</a></div>
+        <a href="#" style="color:var(--accent);font-weight:600;text-decoration:none">Unsubscribe</a>
       </div>
     </div>
   </div>
@@ -243,17 +277,6 @@
       <li>Reclaim 2 lost backlinks via outreach (contacts suggested)</li>
     </ul>
     <div style="margin-top:12px;text-align:right"><button class="btn" onclick="closeModal('oppsModal')">Close</button></div>
-  </div>
-</div>
-
-<div id="helpModal" class="overlay">
-  <div class="modal">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <h4>Report Notes & Guidelines</h4>
-      <button class="close" onclick="closeModal('helpModal')">✕</button>
-    </div>
-    <p class="small muted">This email includes three sections: Keyword ranks, a short logs summary, and AI-driven guideline compliance highlights. Each CTA links to the relevant dashboard view for deeper analysis.</p>
-    <div style="margin-top:12px;text-align:right"><button class="btn" onclick="closeModal('helpModal')">Close</button></div>
   </div>
 </div>
 
