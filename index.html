@@ -1,70 +1,87 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Search Atlas — AI Content Writer Prototype</title>
-
-  <!-- Tailwind CDN (JIT, arbitrary value support) -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- React + ReactDOM (UMD) -->
-  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-
-  <!-- Babel for in-browser JSX transform (ok for prototypes) -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-  <style>
-    /* Small tweak so the body background matches the design immediately */
-    html,body,#root { height: 100%; }
-    body { background: #0b0f12; }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Search Atlas Email Report</title>
 </head>
-<body>
-  <div id="root"></div>
+<body style="font-family:Arial, sans-serif; background:#f5f5f5; margin:0; padding:20px;">
+  <table align="center" width="600" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
+    <tr>
+      <td style="padding:20px; border-bottom:1px solid #eee;">
+        <img src="https://searchatlas.com/wp-content/uploads/2022/07/searchatlas-logo.png" alt="Search Atlas" style="height:32px;" />
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:20px;">
+        <h2 style="margin:0 0 10px; color:#333;">Weekly Keyword Performance Report</h2>
+        <p style="margin:0; color:#666;">Here’s how your site is ranking this week, plus competitor insights and AI recommendations.</p>
+      </td>
+    </tr>
 
-  <!-- App code (JSX compiled by Babel) -->
-  <script type="text/babel">
-    const { useState, useMemo, useEffect } = React;
+    <!-- Top Keywords -->
+    <tr>
+      <td style="padding:20px;">
+        <h3 style="margin:0 0 10px; color:#444;">📈 Top Keywords</h3>
+        <table width="100%" cellpadding="8" cellspacing="0" style="border-collapse:collapse; font-size:14px;">
+          <tr style="background:#f0f0f0;">
+            <th align="left">Keyword</th>
+            <th align="left">Current Rank</th>
+            <th align="left">Change</th>
+          </tr>
+          <tr>
+            <td>seo automation tools</td>
+            <td>#3</td>
+            <td style="color:green;">↑ 2</td>
+          </tr>
+          <tr>
+            <td>backlink management</td>
+            <td>#8</td>
+            <td style="color:red;">↓ 1</td>
+          </tr>
+          <tr>
+            <td>local seo software</td>
+            <td>#5</td>
+            <td style="color:green;">↑ 3</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
 
-    /**
-     * Lightweight shim that mimics the small subset of framer-motion used in the original prototype.
-     * - motion.div / motion.aside apply simple mount animations (translateX/translateY + opacity)
-     * - supports whileHover { x?, y? } for hover transform
-     * - AnimatePresence is a simple passthrough (no complex exit animation)
-     *
-     * This keeps behaviour and visuals similar without requiring a build step.
-     */
-    function makeMotion(tagName) {
-      return function MotionComp({ children, whileHover, initial, animate, exit, style, className, ...props }) {
-        const [isHovered, setIsHovered] = useState(false);
-        const [mounted, setMounted] = useState(false);
+    <!-- Competitor Comparison -->
+    <tr>
+      <td style="padding:20px;">
+        <h3 style="margin:0 0 10px; color:#444;">🏆 Competitor Comparison</h3>
+        <p style="margin:0 0 6px; color:#666;">Your competitor <strong>SEOPro Inc</strong> ranks #2 for “backlink management”. Consider optimizing content to close the gap.</p>
+      </td>
+    </tr>
 
-        useEffect(() => {
-          // trigger "animate" on next frame so CSS transition runs
-          requestAnimationFrame(() => setMounted(true));
-        }, []);
+    <!-- Opportunities -->
+    <tr>
+      <td style="padding:20px;">
+        <h3 style="margin:0 0 10px; color:#444;">💡 Opportunities</h3>
+        <ul style="margin:0; padding-left:18px; color:#666;">
+          <li>Improve meta descriptions for 5 underperforming pages.</li>
+          <li>Target “AI keyword tracking” (high search volume, low competition).</li>
+          <li>Review backlinks lost this week and reclaim opportunities.</li>
+        </ul>
+      </td>
+    </tr>
 
-        // determine transforms from initial / animate / whileHover
-        const getTransformFrom = (obj) => {
-          if (!obj) return '';
-          if (typeof obj.x !== 'undefined') return `translateX(${obj.x}px)`;
-          if (typeof obj.y !== 'undefined') return `translateY(${obj.y}px)`;
-          return '';
-        };
+    <!-- Buttons -->
+    <tr>
+      <td style="padding:20px; text-align:center;">
+        <a href="#" style="display:inline-block; background:#2563eb; color:#fff; padding:10px 20px; border-radius:6px; text-decoration:none; font-weight:bold;">View Full Dashboard</a>
+      </td>
+    </tr>
 
-        let transformStyle = '';
-        if (!mounted && initial) transformStyle = getTransformFrom(initial);
-        else if (mounted && animate) transformStyle = getTransformFrom(animate);
-
-        // override with hover transform if present
-        if (isHovered && whileHover) {
-          if (typeof whileHover.y !== 'undefined') transformStyle = `translateY(${whileHover.y}px)`;
-          else if (typeof whileHover.x !== 'undefined') transformStyle = `translateX(${whileHover.x}px)`;
-        }
-
-        const computedOpacity = (!mounted && initial && typeof initial.opacity !== 'undefined')
-          ? initial.opacity
-          : (mounted && animate && typeof animate.opacity !== 'undefined')
-            ? animate.opacity
+    <!-- Footer -->
+    <tr>
+      <td style="padding:20px; font-size:12px; color:#999; border-top:1px solid #eee; text-align:center;">
+        You are receiving this email because you subscribed to Search Atlas reports.<br />
+        <a href="#" style="color:#2563eb;">Unsubscribe</a> | <a href="#" style="color:#2563eb;">Manage Preferences</a>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
