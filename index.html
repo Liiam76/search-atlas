@@ -58,6 +58,9 @@
 
     /* responsive */
     @media(max-width:900px){.left{display:none}.middle{display:none}}
+
+    /* HIDE requested sidebars (removed) */
+    .left, .middle { display: none !important; }
   </style>
 </head>
 <body>
@@ -105,8 +108,7 @@
             </div>
           </div>
           <div class="cta-row">
-            <button class="btn" onclick="openModal('dashboardModal')">View Full Dashboard</button>
-            <button class="btn ghost" onclick="openModal('guidelineModal')">Review & Approve</button>
+            <!-- top-right buttons removed as requested -->
           </div>
         </div>
 
@@ -157,7 +159,7 @@
             <div style="text-align:right">
               <div class="small muted">Flagged issues</div>
               <div style="font-weight:700;color:#b45309">3 pages exceed density</div>
-              <div style="margin-top:8px"><button class="btn" onclick="openModal('guidelineModal')">Review & Approve</button></div>
+              <div style="margin-top:8px"><button class="btn" onclick="openModal('guidelineModal')">Review</button></div>
             </div>
           </div>
         </div>
