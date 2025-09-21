@@ -1,317 +1,275 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Search Atlas — Keyword Rank Tracker (Prototype)</title>
-  <style>
-    :root{--bg:#f1f3f4;--card:#fff;--muted:#6b7280;--accent:#0f62fe;--success:#16a34a;--danger:#dc2626}
-    html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background:var(--bg); color:#111}
-    .app{display:flex;height:100vh;gap:18px;padding:18px;box-sizing:border-box}
-    /* Left column (mailbox) */
-    .left{width:220px;background:transparent}
-    .brand{display:flex;align-items:center;gap:10px;margin-bottom:18px}
-    .logo{width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;background:linear-gradient(135deg,#0f62fe,#7c3aed);color:#fff;font-weight:700}
-    .mail-list{background:transparent}
-    .mail-item{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;margin-bottom:8px;cursor:pointer}
-    .mail-item.selected{background:#fff;box-shadow:0 1px 3px rgba(16,24,40,0.06)}
-    .mail-item small{color:var(--muted)}
-    /* Middle column: message list */
-    .middle{width:320px;background:transparent}
-    .message-preview{background:var(--card);padding:12px;border-radius:10px;box-shadow:0 1px 2px rgba(16,24,40,0.06)}
-    .subject{font-weight:600}
-    .snippet{color:var(--muted);margin-top:6px}
-
-    /* Right column: email content */
-    .right{flex:1;display:flex;flex-direction:column}
-    .email-card{background:var(--card);padding:20px;border-radius:10px;box-shadow:0 4px 16px rgba(16,24,40,0.08);overflow:auto}
-    .email-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-    .sender{display:flex;gap:12px;align-items:center}
-    .sender .meta{color:var(--muted);font-size:13px}
-    .cta-row{display:flex;gap:10px}
-    .btn{background:var(--accent);color:#fff;padding:8px 12px;border-radius:8px;border:0;cursor:pointer;font-weight:600}
-    .btn.ghost{background:transparent;color:var(--accent);border:1px solid rgba(15,98,254,0.12)}
-    h3{margin:0 0 8px 0}
-    .section{padding:12px;border-radius:8px;margin-bottom:12px;background:#fafafa}
-    table{width:100%;border-collapse:collapse;font-size:14px}
-    th,td{padding:8px 6px;text-align:left;border-bottom:1px solid #eef2f7}
-    th{font-weight:600;color:#374151}
-    .arrow-up{color:var(--success);font-weight:700}
-    .arrow-down{color:var(--danger);font-weight:700}
-    .pill{display:inline-block;padding:6px 8px;border-radius:999px;font-weight:600;font-size:12px;background:#eef2f7}
-    .muted{color:var(--muted)}
-    .small{font-size:13px;color:var(--muted)}
-    .flex{display:flex;gap:12px;align-items:center}
-
-    /* Modals */
-    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.35);display:none;align-items:center;justify-content:center;z-index:60}
-    .modal{width:880px;max-width:95%;background:var(--card);padding:18px;border-radius:12px;box-shadow:0 8px 32px rgba(2,6,23,0.3)}
-    .modal h4{margin:0 0 8px 0}
-    .close{background:transparent;border:0;font-size:18px;cursor:pointer}
-
-    /* approval list */
-    .approval-item{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:8px;background:#fff;margin-bottom:8px;border:1px solid #eef2f7}
-    .approve{background:var(--success);color:#fff;padding:8px 10px;border-radius:8px;border:0;cursor:pointer}
-    .reject{background:var(--danger);color:#fff;padding:8px 10px;border-radius:8px;border:0;cursor:pointer}
-
-    footer{margin-top:12px;color:var(--muted);font-size:13px}
-
-    /* responsive */
-    @media(max-width:900px){.left{display:none}.middle{display:none}}
-
-    /* HIDE requested sidebars (removed) */
-    .left, .middle { display: none !important; }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Search Atlas — Consolidated Keyword Report (Prototype)</title>
+<style>
+  :root{
+    --bg:#f3f4f6; --card:#ffffff; --muted:#6b7280; --accent:#0f62fe;
+    --success:#16a34a; --danger:#dc2626; --glass:rgba(15,98,254,0.08)
+  }
+  html,body{height:100%;margin:0;font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;background:var(--bg);color:#0f172a}
+  .wrap{max-width:900px;margin:28px auto;padding:18px}
+  .email{background:var(--card);border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,0.08);overflow:hidden}
+  .header{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid #eef2f7}
+  .brand{display:flex;gap:12px;align-items:center}
+  .logo{width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#0f62fe,#7c3aed);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700}
+  h1{font-size:18px;margin:0;color:#0b1220}
+  .meta{font-size:13px;color:var(--muted)}
+  .body{padding:20px;display:grid;grid-template-columns:1fr;gap:14px}
+  .section{background:#fbfdff;border-radius:10px;padding:14px;border:1px solid #f1f5f9}
+  .section h3{margin:0 0 10px 0;font-size:15px;color:#081428}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{padding:8px 10px;border-bottom:1px solid #eef2f7;text-align:left}
+  th{font-weight:700;color:#213547}
+  .small{font-size:13px;color:var(--muted)}
+  .btn{display:inline-block;background:var(--accent);color:#fff;padding:9px 14px;border-radius:8px;text-decoration:none;font-weight:600;border:0;cursor:pointer}
+  .btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--glass)}
+  .kpi-row{display:flex;gap:12px;flex-wrap:wrap}
+  .kpi{background:#fff;border-radius:8px;padding:8px 12px;box-shadow:0 1px 0 rgba(2,6,23,0.03);font-weight:700}
+  .pill{display:inline-block;padding:6px 8px;border-radius:999px;background:#eef2f7;font-weight:700}
+  .muted{color:var(--muted)}
+  .row{display:flex;justify-content:space-between;align-items:center;gap:12px}
+  /* Modals */
+  .overlay{position:fixed;inset:0;background:rgba(2,6,23,0.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:60}
+  .modal{background:var(--card);max-width:880px;width:100%;border-radius:10px;padding:16px;box-shadow:0 12px 40px rgba(2,6,23,0.25);max-height:85vh;overflow:auto}
+  .modal h4{margin:0 0 10px 0}
+  .close{background:transparent;border:0;font-size:18px;cursor:pointer;color:var(--muted)}
+  /* responsive */
+  @media(max-width:720px){
+    .wrap{padding:12px}
+    .header{padding:12px}
+    th,td{padding:8px}
+    .btn{padding:8px 12px;font-size:14px}
+  }
+</style>
 </head>
 <body>
-  <div class="app">
-    <div class="left">
+<div class="wrap">
+  <div class="email" role="article" aria-label="Search Atlas keyword report">
+    <div class="header">
       <div class="brand">
         <div class="logo">SA</div>
         <div>
-          <div style="font-weight:700">Search Atlas</div>
-          <div class="small">Keyword Tracker</div>
+          <h1>Weekly Keyword Performance Report</h1>
+          <div class="meta">Search Atlas • no-reply@searchatlas.com • Sep 21, 2025</div>
         </div>
       </div>
-      <div class="mail-list">
-        <div class="mail-item selected" onclick="selectMail(1)">
+      <div class="meta small">Hi John — summary for <strong>example.com</strong></div>
+    </div>
+
+    <div class="body">
+      <!-- 1. Rank Summary -->
+      <section class="section" aria-labelledby="rank-heading">
+        <div class="row" style="margin-bottom:8px">
+          <h3 id="rank-heading">Top Keywords & Rank Changes</h3>
           <div>
-            <div style="font-weight:600">Weekly Keyword Rank Tracker</div>
-            <small class="snippet">Top keywords, changes, AI insights</small>
+            <span class="small muted">Period: Sep 14–21, 2025</span>
+            &nbsp;&nbsp;
+            <button class="btn" onclick="openModal('dashboardModal')">View Dashboard</button>
           </div>
         </div>
-        <div class="mail-item" onclick="selectMail(2)">
+
+        <table aria-describedby="rank-note">
+          <thead>
+            <tr><th>Keyword</th><th>Current Rank</th><th>Change</th><th>Top Competitor</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ai seo tools</td><td>#3</td><td style="color:var(--success)">▲ +2</td><td>competitorA.com #6</td></tr>
+            <tr><td>local seo software</td><td>#8</td><td style="color:var(--danger)">▼ -1</td><td>competitorB.com #4</td></tr>
+            <tr><td>content optimization tips</td><td>#12</td><td style="color:var(--success)">▲ +3</td><td>competitorC.com #10</td></tr>
+          </tbody>
+        </table>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;flex-wrap:wrap">
+          <div class="kpi-row">
+            <div class="kpi">Avg session time: <span class="muted">45m → 20m goal</span></div>
+            <div class="kpi">Weekly completion: <span class="muted">40% → 60% goal</span></div>
+            <div class="kpi">Churn impact: <span class="muted">5% → 2% goal</span></div>
+          </div>
+          <div><a class="btn ghost" href="#" onclick="openModal('oppsModal');return false">Opportunities</a></div>
+        </div>
+      </section>
+
+      <!-- 2. Logs Highlights -->
+      <section class="section" aria-labelledby="logs-heading">
+        <div class="row" style="margin-bottom:8px">
+          <h3 id="logs-heading">Top Change Logs (Highlights)</h3>
+          <span class="small muted">Top 3 actions in this period</span>
+        </div>
+
+        <table>
+          <thead><tr><th>Date</th><th>Keyword</th><th>Change</th><th>By</th><th>Result</th></tr></thead>
+          <tbody>
+            <tr><td>2025-09-19</td><td>seo audit tool</td><td>renamed → seo audit tool</td><td>John D.</td><td><span class="pill">Improved</span></td></tr>
+            <tr><td>2025-09-18</td><td>backlink checker</td><td>tag update (AI)</td><td>System (AI)</td><td><span class="pill">Dropped</span></td></tr>
+            <tr><td>2025-09-15</td><td>local seo guide</td><td>meta description update</td><td>Sarah K.</td><td><span class="pill">Improved</span></td></tr>
+          </tbody>
+        </table>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+          <div class="small muted">Showing top 3 of X changes • <a href="#" onclick="openModal('changesModal');return false">See full logs</a></div>
+          <div><button class="btn" onclick="openModal('changesModal')">View Logs</button></div>
+        </div>
+      </section>
+
+      <!-- 3. Guideline Compliance -->
+      <section class="section" aria-labelledby="guideline-heading">
+        <div class="row" style="margin-bottom:8px">
+          <h3 id="guideline-heading">Guideline Compliance Snapshot</h3>
+          <span class="small muted">AI highlights top/bottom compliance and actions</span>
+        </div>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+          <div style="flex:1;min-width:240px">
+            <div class="small muted">Top-compliant rules</div>
+            <ul style="margin:8px 0 0 16px">
+              <li>Title length &lt; 60 chars — <strong>95% compliant</strong></li>
+              <li>Meta includes primary keyword — <strong>88% compliant</strong></li>
+            </ul>
+          </div>
+          <div style="flex:1;min-width:240px">
+            <div class="small muted">Lowest-compliant areas</div>
+            <ul style="margin:8px 0 0 16px">
+              <li>Keyword density within range — <strong>54%</strong></li>
+              <li>Image alt text with keyword — <strong>40% (action needed)</strong></li>
+            </ul>
+          </div>
+          <div style="flex:1;min-width:200px;text-align:right">
+            <div class="small muted">Top AI actions</div>
+            <ol style="margin:8px 0 0 16px;text-align:left">
+              <li>Reduce density on /best-seo-automation (8% → 3-5%)</li>
+              <li>Add alt text on 3 high-traffic pages</li>
+              <li>Update meta on 5 low-conversion pages</li>
+            </ol>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+          <div class="small muted">Compliance score: <strong>78%</strong></div>
           <div>
-            <div style="font-weight:600">Daily Digest — Live</div>
-            <small class="snippet">Quick snapshot</small>
+            <button class="btn" onclick="openModal('guidelineModal')">Review Guidelines</button>
           </div>
         </div>
+      </section>
+
+      <div style="padding:8px 6px 20px 6px;text-align:center">
+        <div class="small muted">This summary follows search engine best practices and avoids keyword stuffing. <a href="#" onclick="openModal('helpModal');return false">Learn more</a></div>
       </div>
-    </div>
-
-    <div class="middle">
-      <div class="message-preview">
-        <div class="subject">Weekly Keyword Rank Tracker</div>
-        <div class="small muted">From: Search Atlas &lt;no-reply@searchatlas.com&gt;</div>
-        <div class="snippet" style="margin-top:8px">Your weekly SEO performance update including competitor comparison and flagged items for review.</div>
-      </div>
-    </div>
-
-    <div class="right">
-      <div class="email-card" id="emailCard">
-        <div class="email-header">
-          <div class="sender">
-            <div class="logo" style="width:44px;height:44px;border-radius:8px;font-size:16px">SA</div>
-            <div>
-              <div style="font-weight:700">Weekly Keyword Rank Tracker</div>
-              <div class="meta small">Search Atlas &nbsp;•&nbsp; no-reply@searchatlas.com &nbsp;•&nbsp; Sep 21, 2025</div>
-            </div>
-          </div>
-          <div class="cta-row">
-            <!-- top-right buttons removed as requested -->
-          </div>
-        </div>
-
-        <p>Hi <strong>John</strong>, here’s your weekly SEO performance summary. Recommendations follow search engine best practices and avoid keyword stuffing.</p>
-
-        <div class="section">
-          <h3>Top keywords</h3>
-          <table>
-            <thead>
-              <tr><th>Keyword</th><th>Rank</th><th>Change</th><th>Top Competitor</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>ai seo tools</td><td>#3</td><td><span class="arrow-up">▲ +2</span></td><td>competitorA.com #6</td></tr>
-              <tr><td>local seo software</td><td>#8</td><td><span class="arrow-down">▼ -1</span></td><td>competitorB.com #4</td></tr>
-              <tr><td>content optimization tips</td><td>#12</td><td><span class="arrow-up">▲ +3</span></td><td>competitorC.com #10</td></tr>
-              <tr><td>best seo automation</td><td>#22</td><td><span class="arrow-up">▲ +5</span></td><td>competitorD.com #11</td></tr>
-            </tbody>
-          </table>
-          <div style="margin-top:10px;display:flex;justify-content:flex-end">
-            <button class="btn" onclick="openModal('dashboardModal')">View Full Dashboard</button>
-          </div>
-        </div>
-
-        <div class="section">
-          <h3>Recent updates</h3>
-          <table>
-            <thead>
-              <tr><th>Date</th><th>User</th><th>Keyword</th><th>Action</th><th>Before → After</th><th>Result</th></tr>
-            </thead>
-            <tbody id="updatesBody">
-              <tr><td>Sep 18</td><td>John D.</td><td>ai blog generator</td><td>Updated meta title</td><td>Old Title → New Title</td><td><span class="pill" id="res1">Improved</span></td></tr>
-              <tr><td>Sep 20</td><td>Sarah P.</td><td>content optimization</td><td>Bulk tag update</td><td>Tags A → Tags B</td><td><span class="pill" id="res2">Dropped</span></td></tr>
-            </tbody>
-          </table>
-          <div style="margin-top:10px;display:flex;justify-content:flex-end">
-            <button class="btn ghost" onclick="openModal('changesModal')">See All Changes</button>
-          </div>
-        </div>
-
-        <div class="section">
-          <h3>AI Guideline Insights</h3>
-          <div class="flex" style="justify-content:space-between">
-            <div>
-              <div class="small muted">Compliance</div>
-              <div style="font-weight:700">Titles &lt; 60 chars: <span class="pill">95%</span></div>
-              <div style="font-weight:700;margin-top:6px">Meta includes keyword: <span class="pill">88%</span></div>
-            </div>
-            <div style="text-align:right">
-              <div class="small muted">Flagged issues</div>
-              <div style="font-weight:700;color:#b45309">3 pages exceed density</div>
-              <div style="margin-top:8px"><button class="btn" onclick="openModal('guidelineModal')">Review</button></div>
-            </div>
-          </div>
-        </div>
-
-        <footer>
-          <div>Manage subscription | <a href="#">Privacy policy</a></div>
-          <div style="margin-top:6px" class="small muted">These recommendations follow search engine best practices. For support, contact support@searchatlas.com</div>
-        </footer>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modals -->
-  <div class="modal-backdrop" id="dashboardModal">
-    <div class="modal" role="dialog" aria-modal="true">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <h4>Full Dashboard (Prototype)</h4>
-        <button class="close" onclick="closeModal('dashboardModal')">✕</button>
-      </div>
-      <p class="small muted">This prototype dashboard summarizes rank trends and opportunities. (Clickable prototype)</p>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
-        <div style="background:#fff;padding:12px;border-radius:8px;">
-          <div style="font-weight:700">Keywords close to Top 10</div>
-          <ul style="margin:8px 0 0 16px"><li>content optimization tips (+2)</li><li>best seo automation (+5)</li></ul>
-        </div>
-        <div style="background:#fff;padding:12px;border-radius:8px;">
-          <div style="font-weight:700">Competitor watch</div>
-          <ul style="margin:8px 0 0 16px"><li>competitorB.com improving on local seo</li></ul>
-        </div>
-      </div>
-      <div style="margin-top:12px;text-align:right"><button class="btn" onclick="closeModal('dashboardModal')">Close</button></div>
     </div>
   </div>
+</div>
 
-  <div class="modal-backdrop" id="changesModal">
-    <div class="modal">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <h4>All Changes</h4>
-        <button class="close" onclick="closeModal('changesModal')">✕</button>
+<!-- Modals -->
+<div id="dashboardModal" class="overlay" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h4>Dashboard — Keyword Trends (Prototype)</h4>
+      <button class="close" onclick="closeModal('dashboardModal')">✕</button>
+    </div>
+    <p class="small muted">This is a clickable prototype dashboard section (mock data).</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+      <div style="background:#fbfdff;padding:12px;border-radius:8px">
+        <strong>Keywords close to Top 10</strong>
+        <ul style="margin:10px 0 0 16px"><li>content optimization tips (+2)</li><li>best seo automation (+5)</li></ul>
       </div>
-      <div style="max-height:420px;overflow:auto">
-        <div class="approval-item">
-          <div>
-            <div style="font-weight:700">Sep 20 • Sarah P.</div>
-            <div class="small muted">Keyword: content optimization • Bulk tag update</div>
-            <div style="margin-top:6px;font-size:13px">Before: Tags A • After: Tags B</div>
-          </div>
-          <div style="text-align:right">
-            <button class="approve" onclick="markResult('res2','Reverted')">Revert</button>
-            <div style="height:8px"></div>
-            <button class="reject" onclick="markResult('res2','Reviewed')">Mark Reviewed</button>
-          </div>
-        </div>
-        <div class="approval-item">
-          <div>
-            <div style="font-weight:700">Sep 18 • John D.</div>
-            <div class="small muted">Keyword: ai blog generator • Updated meta title</div>
-            <div style="margin-top:6px;font-size:13px">Before: Old Title • After: New Title</div>
-          </div>
-          <div style="text-align:right">
-            <button class="approve" onclick="markResult('res1','Approved')">Approve</button>
-            <div style="height:8px"></div>
-            <button class="reject" onclick="markResult('res1','Rejected')">Reject</button>
-          </div>
-        </div>
+      <div style="background:#fbfdff;padding:12px;border-radius:8px">
+        <strong>Competitor watch</strong>
+        <ul style="margin:10px 0 0 16px"><li>competitorB.com improving on local seo</li></ul>
       </div>
-      <div style="margin-top:12px;text-align:right"><button class="btn" onclick="closeModal('changesModal')">Close</button></div>
+    </div>
+    <div style="margin-top:12px;text-align:right"><button class="btn" onclick="closeModal('dashboardModal')">Close</button></div>
+  </div>
+</div>
+
+<div id="changesModal" class="overlay">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h4>Full Change Logs (Prototype)</h4>
+      <button class="close" onclick="closeModal('changesModal')">✕</button>
+    </div>
+    <p class="small muted">All logged changes (sample rows). Use filters to narrow results.</p>
+    <table style="margin-top:8px">
+      <thead><tr><th>Date</th><th>Keyword</th><th>Change</th><th>By</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>2025-09-19 14:32</td><td>seo audit tool</td><td>Renamed</td><td>John D.</td><td>Improved</td></tr>
+        <tr><td>2025-09-18 09:05</td><td>backlink checker</td><td>Tag update</td><td>System (AI)</td><td>Dropped</td></tr>
+        <tr><td>2025-09-15 20:11</td><td>local seo guide</td><td>Meta update</td><td>Sarah K.</td><td>Improved</td></tr>
+        <tr><td>2025-09-12 08:50</td><td>ai seo software</td><td>Test update</td><td>John D.</td><td>No change</td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:12px;text-align:right">
+      <button class="btn ghost" onclick="closeModal('changesModal')">Export CSV</button>
+      <button class="btn" onclick="closeModal('changesModal')">Close</button>
     </div>
   </div>
+</div>
 
-  <div class="modal-backdrop" id="guidelineModal">
-    <div class="modal">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <h4>Guideline Review & Approvals</h4>
-        <button class="close" onclick="closeModal('guidelineModal')">✕</button>
-      </div>
-      <p class="small muted">Items flagged by the guideline engine for senior approval.</p>
-      <div style="max-height:360px;overflow:auto;margin-top:8px">
-        <div class="approval-item">
-          <div>
-            <div style="font-weight:700">Page: best seo automation</div>
-            <div class="small muted">Issue: keyword density 8% (threshold 3-5%)</div>
-          </div>
-          <div>
-            <button class="approve" onclick="approveGuideline(this)">Approve</button>
-            <div style="height:8px"></div>
-            <button class="reject" onclick="rejectGuideline(this)">Request changes</button>
-          </div>
-        </div>
-        <div class="approval-item">
-          <div>
-            <div style="font-weight:700">Page: ai seo tools</div>
-            <div class="small muted">Issue: title length 78 chars (threshold &lt; 60)</div>
-          </div>
-          <div>
-            <button class="approve" onclick="approveGuideline(this)">Approve</button>
-            <div style="height:8px"></div>
-            <button class="reject" onclick="rejectGuideline(this)">Request changes</button>
-          </div>
-        </div>
-      </div>
-      <div style="margin-top:12px;text-align:right"><button class="btn" onclick="closeModal('guidelineModal')">Done</button></div>
+<div id="guidelineModal" class="overlay">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h4>Guideline Compliance — Details</h4>
+      <button class="close" onclick="closeModal('guidelineModal')">✕</button>
+    </div>
+    <p class="small muted">Rules, compliance percentages, and actions for flagged pages.</p>
+
+    <table style="margin-top:8px">
+      <thead><tr><th>Rule</th><th>Compliant</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td>Title &lt; 60 chars</td><td>95%</td><td>None</td></tr>
+        <tr><td>Meta includes primary keyword</td><td>88%</td><td>Update 5 pages</td></tr>
+        <tr><td>Keyword density 1–2%</td><td>54%</td><td>Reduce density on /best-seo-automation</td></tr>
+        <tr><td>Image alt contains keyword</td><td>40%</td><td>Add alt text on 3 pages</td></tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top:12px;text-align:right">
+      <button class="btn ghost" onclick="closeModal('guidelineModal')">Snooze recommendations</button>
+      <button class="btn" onclick="closeModal('guidelineModal')">Take action</button>
     </div>
   </div>
+</div>
 
-  <script>
-    function openModal(id){
-      document.getElementById(id).style.display='flex';
-    }
-    function closeModal(id){
-      document.getElementById(id).style.display='none';
-    }
-    function markResult(elId,newState){
-      const el = document.getElementById(elId);
-      if(!el) return;
-      el.textContent = newState;
-      el.style.background = newState === 'Reverted' ? '#fee2e2' : '#ecfdf5';
-      el.style.color = newState === 'Reverted' ? '#7f1d1d' : '#065f46';
-      alert('Marked "' + newState + '" for this change.');
-    }
-    function approveGuideline(btn){
-      const item = btn.closest('.approval-item');
-      item.style.opacity = 0.5;
-      btn.textContent = 'Approved';
-      btn.disabled = true;
-      btn.style.background = 'linear-gradient(90deg,#10b981,#059669)';
-      setTimeout(()=>{
-        // update the email summary badge
-        const sect = document.querySelector('.section:nth-of-type(3)');
-        if(sect){
-          const el = document.createElement('div');
-          el.className='small muted';
-          el.style.marginTop='8px';
-          el.textContent='Approved 1 flagged issue in guidelines.';
-          sect.appendChild(el);
-        }
-      },600);
-    }
-    function rejectGuideline(btn){
-      const item = btn.closest('.approval-item');
-      item.style.border = '1px dashed #fca5a5';
-      item.style.background = '#fff7f7';
-      btn.textContent = 'Requested changes';
-      btn.disabled = true;
-      alert('Requested changes — the author will be notified.');
-    }
-    // Mail selector (simple)
-    function selectMail(id){
-      document.querySelectorAll('.mail-item').forEach(i=>i.classList.remove('selected'));
-      document.querySelector('.mail-item').classList.add('selected');
-      // no-op for prototype
-    }
-  </script>
+<div id="oppsModal" class="overlay">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h4>Opportunities — Quick Actions</h4>
+      <button class="close" onclick="closeModal('oppsModal')">✕</button>
+    </div>
+    <ul style="margin-top:8px">
+      <li>Improve meta descriptions for 5 underperforming pages (quick edit link)</li>
+      <li>Add schema markup to product pages (high impact)</li>
+      <li>Reclaim 2 lost backlinks via outreach (contacts suggested)</li>
+    </ul>
+    <div style="margin-top:12px;text-align:right"><button class="btn" onclick="closeModal('oppsModal')">Close</button></div>
+  </div>
+</div>
+
+<div id="helpModal" class="overlay">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h4>Report Notes & Guidelines</h4>
+      <button class="close" onclick="closeModal('helpModal')">✕</button>
+    </div>
+    <p class="small muted">This email includes three sections: Keyword ranks, a short logs summary, and AI-driven guideline compliance highlights. Each CTA links to the relevant dashboard view for deeper analysis.</p>
+    <div style="margin-top:12px;text-align:right"><button class="btn" onclick="closeModal('helpModal')">Close</button></div>
+  </div>
+</div>
+
+<script>
+  function openModal(id){
+    document.getElementById(id).style.display='flex';
+  }
+  function closeModal(id){
+    document.getElementById(id).style.display='none';
+  }
+  // close when clicking outside modal
+  document.querySelectorAll('.overlay').forEach(el=>{
+    el.addEventListener('click', (e)=>{
+      if(e.target === el) el.style.display='none';
+    });
+  });
+</script>
 </body>
 </html>
