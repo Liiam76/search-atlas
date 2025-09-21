@@ -1,87 +1,315 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Search Atlas Email Report</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Search Atlas — Keyword Rank Tracker (Prototype)</title>
+  <style>
+    :root{--bg:#f1f3f4;--card:#fff;--muted:#6b7280;--accent:#0f62fe;--success:#16a34a;--danger:#dc2626}
+    html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background:var(--bg); color:#111}
+    .app{display:flex;height:100vh;gap:18px;padding:18px;box-sizing:border-box}
+    /* Left column (mailbox) */
+    .left{width:220px;background:transparent}
+    .brand{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+    .logo{width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;background:linear-gradient(135deg,#0f62fe,#7c3aed);color:#fff;font-weight:700}
+    .mail-list{background:transparent}
+    .mail-item{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;margin-bottom:8px;cursor:pointer}
+    .mail-item.selected{background:#fff;box-shadow:0 1px 3px rgba(16,24,40,0.06)}
+    .mail-item small{color:var(--muted)}
+    /* Middle column: message list */
+    .middle{width:320px;background:transparent}
+    .message-preview{background:var(--card);padding:12px;border-radius:10px;box-shadow:0 1px 2px rgba(16,24,40,0.06)}
+    .subject{font-weight:600}
+    .snippet{color:var(--muted);margin-top:6px}
+
+    /* Right column: email content */
+    .right{flex:1;display:flex;flex-direction:column}
+    .email-card{background:var(--card);padding:20px;border-radius:10px;box-shadow:0 4px 16px rgba(16,24,40,0.08);overflow:auto}
+    .email-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .sender{display:flex;gap:12px;align-items:center}
+    .sender .meta{color:var(--muted);font-size:13px}
+    .cta-row{display:flex;gap:10px}
+    .btn{background:var(--accent);color:#fff;padding:8px 12px;border-radius:8px;border:0;cursor:pointer;font-weight:600}
+    .btn.ghost{background:transparent;color:var(--accent);border:1px solid rgba(15,98,254,0.12)}
+    h3{margin:0 0 8px 0}
+    .section{padding:12px;border-radius:8px;margin-bottom:12px;background:#fafafa}
+    table{width:100%;border-collapse:collapse;font-size:14px}
+    th,td{padding:8px 6px;text-align:left;border-bottom:1px solid #eef2f7}
+    th{font-weight:600;color:#374151}
+    .arrow-up{color:var(--success);font-weight:700}
+    .arrow-down{color:var(--danger);font-weight:700}
+    .pill{display:inline-block;padding:6px 8px;border-radius:999px;font-weight:600;font-size:12px;background:#eef2f7}
+    .muted{color:var(--muted)}
+    .small{font-size:13px;color:var(--muted)}
+    .flex{display:flex;gap:12px;align-items:center}
+
+    /* Modals */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.35);display:none;align-items:center;justify-content:center;z-index:60}
+    .modal{width:880px;max-width:95%;background:var(--card);padding:18px;border-radius:12px;box-shadow:0 8px 32px rgba(2,6,23,0.3)}
+    .modal h4{margin:0 0 8px 0}
+    .close{background:transparent;border:0;font-size:18px;cursor:pointer}
+
+    /* approval list */
+    .approval-item{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:8px;background:#fff;margin-bottom:8px;border:1px solid #eef2f7}
+    .approve{background:var(--success);color:#fff;padding:8px 10px;border-radius:8px;border:0;cursor:pointer}
+    .reject{background:var(--danger);color:#fff;padding:8px 10px;border-radius:8px;border:0;cursor:pointer}
+
+    footer{margin-top:12px;color:var(--muted);font-size:13px}
+
+    /* responsive */
+    @media(max-width:900px){.left{display:none}.middle{display:none}}
+  </style>
 </head>
-<body style="font-family:Arial, sans-serif; background:#f5f5f5; margin:0; padding:20px;">
-  <table align="center" width="600" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
-    <tr>
-      <td style="padding:20px; border-bottom:1px solid #eee;">
-        <img src="https://searchatlas.com/wp-content/uploads/2022/07/searchatlas-logo.png" alt="Search Atlas" style="height:32px;" />
-      </td>
-    </tr>
-    <tr>
-      <td style="padding:20px;">
-        <h2 style="margin:0 0 10px; color:#333;">Weekly Keyword Performance Report</h2>
-        <p style="margin:0; color:#666;">Here’s how your site is ranking this week, plus competitor insights and AI recommendations.</p>
-      </td>
-    </tr>
+<body>
+  <div class="app">
+    <div class="left">
+      <div class="brand">
+        <div class="logo">SA</div>
+        <div>
+          <div style="font-weight:700">Search Atlas</div>
+          <div class="small">Keyword Tracker</div>
+        </div>
+      </div>
+      <div class="mail-list">
+        <div class="mail-item selected" onclick="selectMail(1)">
+          <div>
+            <div style="font-weight:600">Weekly Keyword Rank Tracker</div>
+            <small class="snippet">Top keywords, changes, AI insights</small>
+          </div>
+        </div>
+        <div class="mail-item" onclick="selectMail(2)">
+          <div>
+            <div style="font-weight:600">Daily Digest — Live</div>
+            <small class="snippet">Quick snapshot</small>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <!-- Top Keywords -->
-    <tr>
-      <td style="padding:20px;">
-        <h3 style="margin:0 0 10px; color:#444;">📈 Top Keywords</h3>
-        <table width="100%" cellpadding="8" cellspacing="0" style="border-collapse:collapse; font-size:14px;">
-          <tr style="background:#f0f0f0;">
-            <th align="left">Keyword</th>
-            <th align="left">Current Rank</th>
-            <th align="left">Change</th>
-          </tr>
-          <tr>
-            <td>seo automation tools</td>
-            <td>#3</td>
-            <td style="color:green;">↑ 2</td>
-          </tr>
-          <tr>
-            <td>backlink management</td>
-            <td>#8</td>
-            <td style="color:red;">↓ 1</td>
-          </tr>
-          <tr>
-            <td>local seo software</td>
-            <td>#5</td>
-            <td style="color:green;">↑ 3</td>
-          </tr>
-        </table>
-      </td>
-    </tr>
+    <div class="middle">
+      <div class="message-preview">
+        <div class="subject">Weekly Keyword Rank Tracker</div>
+        <div class="small muted">From: Search Atlas &lt;no-reply@searchatlas.com&gt;</div>
+        <div class="snippet" style="margin-top:8px">Your weekly SEO performance update including competitor comparison and flagged items for review.</div>
+      </div>
+    </div>
 
-    <!-- Competitor Comparison -->
-    <tr>
-      <td style="padding:20px;">
-        <h3 style="margin:0 0 10px; color:#444;">🏆 Competitor Comparison</h3>
-        <p style="margin:0 0 6px; color:#666;">Your competitor <strong>SEOPro Inc</strong> ranks #2 for “backlink management”. Consider optimizing content to close the gap.</p>
-      </td>
-    </tr>
+    <div class="right">
+      <div class="email-card" id="emailCard">
+        <div class="email-header">
+          <div class="sender">
+            <div class="logo" style="width:44px;height:44px;border-radius:8px;font-size:16px">SA</div>
+            <div>
+              <div style="font-weight:700">Weekly Keyword Rank Tracker</div>
+              <div class="meta small">Search Atlas &nbsp;•&nbsp; no-reply@searchatlas.com &nbsp;•&nbsp; Sep 21, 2025</div>
+            </div>
+          </div>
+          <div class="cta-row">
+            <button class="btn" onclick="openModal('dashboardModal')">View Full Dashboard</button>
+            <button class="btn ghost" onclick="openModal('guidelineModal')">Review & Approve</button>
+          </div>
+        </div>
 
-    <!-- Opportunities -->
-    <tr>
-      <td style="padding:20px;">
-        <h3 style="margin:0 0 10px; color:#444;">💡 Opportunities</h3>
-        <ul style="margin:0; padding-left:18px; color:#666;">
-          <li>Improve meta descriptions for 5 underperforming pages.</li>
-          <li>Target “AI keyword tracking” (high search volume, low competition).</li>
-          <li>Review backlinks lost this week and reclaim opportunities.</li>
-        </ul>
-      </td>
-    </tr>
+        <p>Hi <strong>John</strong>, here’s your weekly SEO performance summary. Recommendations follow search engine best practices and avoid keyword stuffing.</p>
 
-    <!-- Buttons -->
-    <tr>
-      <td style="padding:20px; text-align:center;">
-        <a href="#" style="display:inline-block; background:#2563eb; color:#fff; padding:10px 20px; border-radius:6px; text-decoration:none; font-weight:bold;">View Full Dashboard</a>
-      </td>
-    </tr>
+        <div class="section">
+          <h3>Top keywords</h3>
+          <table>
+            <thead>
+              <tr><th>Keyword</th><th>Rank</th><th>Change</th><th>Top Competitor</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>ai seo tools</td><td>#3</td><td><span class="arrow-up">▲ +2</span></td><td>competitorA.com #6</td></tr>
+              <tr><td>local seo software</td><td>#8</td><td><span class="arrow-down">▼ -1</span></td><td>competitorB.com #4</td></tr>
+              <tr><td>content optimization tips</td><td>#12</td><td><span class="arrow-up">▲ +3</span></td><td>competitorC.com #10</td></tr>
+              <tr><td>best seo automation</td><td>#22</td><td><span class="arrow-up">▲ +5</span></td><td>competitorD.com #11</td></tr>
+            </tbody>
+          </table>
+          <div style="margin-top:10px;display:flex;justify-content:flex-end">
+            <button class="btn" onclick="openModal('dashboardModal')">View Full Dashboard</button>
+          </div>
+        </div>
 
-    <!-- Footer -->
-    <tr>
-      <td style="padding:20px; font-size:12px; color:#999; border-top:1px solid #eee; text-align:center;">
-        You are receiving this email because you subscribed to Search Atlas reports.<br />
-        <a href="#" style="color:#2563eb;">Unsubscribe</a> | <a href="#" style="color:#2563eb;">Manage Preferences</a>
-      </td>
-    </tr>
-  </table>
+        <div class="section">
+          <h3>Recent updates</h3>
+          <table>
+            <thead>
+              <tr><th>Date</th><th>User</th><th>Keyword</th><th>Action</th><th>Before → After</th><th>Result</th></tr>
+            </thead>
+            <tbody id="updatesBody">
+              <tr><td>Sep 18</td><td>John D.</td><td>ai blog generator</td><td>Updated meta title</td><td>Old Title → New Title</td><td><span class="pill" id="res1">Improved</span></td></tr>
+              <tr><td>Sep 20</td><td>Sarah P.</td><td>content optimization</td><td>Bulk tag update</td><td>Tags A → Tags B</td><td><span class="pill" id="res2">Dropped</span></td></tr>
+            </tbody>
+          </table>
+          <div style="margin-top:10px;display:flex;justify-content:flex-end">
+            <button class="btn ghost" onclick="openModal('changesModal')">See All Changes</button>
+          </div>
+        </div>
+
+        <div class="section">
+          <h3>AI Guideline Insights</h3>
+          <div class="flex" style="justify-content:space-between">
+            <div>
+              <div class="small muted">Compliance</div>
+              <div style="font-weight:700">Titles &lt; 60 chars: <span class="pill">95%</span></div>
+              <div style="font-weight:700;margin-top:6px">Meta includes keyword: <span class="pill">88%</span></div>
+            </div>
+            <div style="text-align:right">
+              <div class="small muted">Flagged issues</div>
+              <div style="font-weight:700;color:#b45309">3 pages exceed density</div>
+              <div style="margin-top:8px"><button class="btn" onclick="openModal('guidelineModal')">Review & Approve</button></div>
+            </div>
+          </div>
+        </div>
+
+        <footer>
+          <div>Manage subscription | <a href="#">Privacy policy</a></div>
+          <div style="margin-top:6px" class="small muted">These recommendations follow search engine best practices. For support, contact support@searchatlas.com</div>
+        </footer>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modals -->
+  <div class="modal-backdrop" id="dashboardModal">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h4>Full Dashboard (Prototype)</h4>
+        <button class="close" onclick="closeModal('dashboardModal')">✕</button>
+      </div>
+      <p class="small muted">This prototype dashboard summarizes rank trends and opportunities. (Clickable prototype)</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+        <div style="background:#fff;padding:12px;border-radius:8px;">
+          <div style="font-weight:700">Keywords close to Top 10</div>
+          <ul style="margin:8px 0 0 16px"><li>content optimization tips (+2)</li><li>best seo automation (+5)</li></ul>
+        </div>
+        <div style="background:#fff;padding:12px;border-radius:8px;">
+          <div style="font-weight:700">Competitor watch</div>
+          <ul style="margin:8px 0 0 16px"><li>competitorB.com improving on local seo</li></ul>
+        </div>
+      </div>
+      <div style="margin-top:12px;text-align:right"><button class="btn" onclick="closeModal('dashboardModal')">Close</button></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="changesModal">
+    <div class="modal">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h4>All Changes</h4>
+        <button class="close" onclick="closeModal('changesModal')">✕</button>
+      </div>
+      <div style="max-height:420px;overflow:auto">
+        <div class="approval-item">
+          <div>
+            <div style="font-weight:700">Sep 20 • Sarah P.</div>
+            <div class="small muted">Keyword: content optimization • Bulk tag update</div>
+            <div style="margin-top:6px;font-size:13px">Before: Tags A • After: Tags B</div>
+          </div>
+          <div style="text-align:right">
+            <button class="approve" onclick="markResult('res2','Reverted')">Revert</button>
+            <div style="height:8px"></div>
+            <button class="reject" onclick="markResult('res2','Reviewed')">Mark Reviewed</button>
+          </div>
+        </div>
+        <div class="approval-item">
+          <div>
+            <div style="font-weight:700">Sep 18 • John D.</div>
+            <div class="small muted">Keyword: ai blog generator • Updated meta title</div>
+            <div style="margin-top:6px;font-size:13px">Before: Old Title • After: New Title</div>
+          </div>
+          <div style="text-align:right">
+            <button class="approve" onclick="markResult('res1','Approved')">Approve</button>
+            <div style="height:8px"></div>
+            <button class="reject" onclick="markResult('res1','Rejected')">Reject</button>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:12px;text-align:right"><button class="btn" onclick="closeModal('changesModal')">Close</button></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="guidelineModal">
+    <div class="modal">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h4>Guideline Review & Approvals</h4>
+        <button class="close" onclick="closeModal('guidelineModal')">✕</button>
+      </div>
+      <p class="small muted">Items flagged by the guideline engine for senior approval.</p>
+      <div style="max-height:360px;overflow:auto;margin-top:8px">
+        <div class="approval-item">
+          <div>
+            <div style="font-weight:700">Page: best seo automation</div>
+            <div class="small muted">Issue: keyword density 8% (threshold 3-5%)</div>
+          </div>
+          <div>
+            <button class="approve" onclick="approveGuideline(this)">Approve</button>
+            <div style="height:8px"></div>
+            <button class="reject" onclick="rejectGuideline(this)">Request changes</button>
+          </div>
+        </div>
+        <div class="approval-item">
+          <div>
+            <div style="font-weight:700">Page: ai seo tools</div>
+            <div class="small muted">Issue: title length 78 chars (threshold &lt; 60)</div>
+          </div>
+          <div>
+            <button class="approve" onclick="approveGuideline(this)">Approve</button>
+            <div style="height:8px"></div>
+            <button class="reject" onclick="rejectGuideline(this)">Request changes</button>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:12px;text-align:right"><button class="btn" onclick="closeModal('guidelineModal')">Done</button></div>
+    </div>
+  </div>
+
+  <script>
+    function openModal(id){
+      document.getElementById(id).style.display='flex';
+    }
+    function closeModal(id){
+      document.getElementById(id).style.display='none';
+    }
+    function markResult(elId,newState){
+      const el = document.getElementById(elId);
+      if(!el) return;
+      el.textContent = newState;
+      el.style.background = newState === 'Reverted' ? '#fee2e2' : '#ecfdf5';
+      el.style.color = newState === 'Reverted' ? '#7f1d1d' : '#065f46';
+      alert('Marked "' + newState + '" for this change.');
+    }
+    function approveGuideline(btn){
+      const item = btn.closest('.approval-item');
+      item.style.opacity = 0.5;
+      btn.textContent = 'Approved';
+      btn.disabled = true;
+      btn.style.background = 'linear-gradient(90deg,#10b981,#059669)';
+      setTimeout(()=>{
+        // update the email summary badge
+        const sect = document.querySelector('.section:nth-of-type(3)');
+        if(sect){
+          const el = document.createElement('div');
+          el.className='small muted';
+          el.style.marginTop='8px';
+          el.textContent='Approved 1 flagged issue in guidelines.';
+          sect.appendChild(el);
+        }
+      },600);
+    }
+    function rejectGuideline(btn){
+      const item = btn.closest('.approval-item');
+      item.style.border = '1px dashed #fca5a5';
+      item.style.background = '#fff7f7';
+      btn.textContent = 'Requested changes';
+      btn.disabled = true;
+      alert('Requested changes — the author will be notified.');
+    }
+    // Mail selector (simple)
+    function selectMail(id){
+      document.querySelectorAll('.mail-item').forEach(i=>i.classList.remove('selected'));
+      document.querySelector('.mail-item').classList.add('selected');
+      // no-op for prototype
+    }
+  </script>
 </body>
 </html>
