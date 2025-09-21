@@ -1,150 +1,231 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Unified Rent Calculator</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      background-color: #f9f9f9;
-      padding: 2rem;
-    }
-    .container {
-      max-width: 600px;
-      margin: auto;
-      background: white;
-      padding: 2rem;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    input, select, button {
-      width: 100%;
-      margin-top: 0.5rem;
-      margin-bottom: 1rem;
-      padding: 0.75rem;
-      font-size: 1rem;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-    button {
-      background-color: #111;
-      color: white;
-      font-weight: bold;
-      border: none;
-      cursor: pointer;
-    }
-    .result {
-      margin-top: 1.5rem;
-      padding: 1rem;
-      background: #f0f0f0;
-      border-radius: 5px;
-    }
-    .warning {
-      background: #fff3cd;
-      color: #856404;
-      padding: 1rem;
-      margin-top: 1rem;
-      border: 1px solid #ffeeba;
-      border-radius: 5px;
-    }
-    .hint {
-      font-size: 0.9rem;
-      color: #666;
-      margin-top: -0.5rem;
-      margin-bottom: 1rem;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h2>Unified Rent Calculator</h2>
+import React, {useState, useMemo} from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 
-    <label>Monthly Salary (₦)</label>
-    <input type="number" id="salary" placeholder="e.g. 300000" oninput="updateMaxLoanHint()" />
-    <div class="hint" id="salaryHint"></div>
+// Single-file React + Tailwind prototype for Search Atlas — AI Content Writer
+// Default export a component that can be previewed. Uses Tailwind classes.
 
-    <label>Requested Financing Amount (₦)</label>
-    <input type="number" id="requestedAmount" placeholder="e.g. 800000" />
+const TEMPLATES = [
+  {
+    id: 'ai-image',
+    title: 'AI Image Generation',
+    subtitle: 'Create custom images that are the perfect fit for your content.',
+    tags: ['Image', 'Design'],
+    highlight: true
+  },
+  { id: 'ask-anything', title: 'Ask Me Anything', subtitle: 'Get answers for anything your creative mind thinks of.', tags: ['General'] },
+  { id: 'amazon-desc', title: 'Amazon Product Description (paragraph)', subtitle: 'Create compelling product descriptions for Amazon listings.', tags: ['Ecommerce'] },
+  { id: 'amazon-feat', title: 'Amazon Product Features (bullets)', subtitle: 'Create feature and benefit bullet points for Amazon listings.', tags: ['Ecommerce'] },
+  { id: 'thousand-words', title: "A Thousand Words is Worth a Picture", subtitle: 'Get image prompt ideas to use with the AI Image Generator.', tags: ['Image'] },
+  { id: 'blog-conclusion', title: 'Blog Post Conclusion Paragraph', subtitle: 'Wrap up your blog posts with an engaging conclusion.', tags: ['Blog'] },
+  { id: 'blog-intro', title: 'Blog Post Intro Paragraph', subtitle: 'Let AI write your opening paragraph for a blog post.', tags: ['Blog'] },
+  { id: 'blog-paragraph', title: 'Blog Post Paragraph', subtitle: 'Write a paragraph about a certain topic related to your blog post.', tags: ['Blog'] },
+  { id: 'blog-outline', title: 'Blog Post Outline', subtitle: 'Generate a numbered list based on a topic. Perfect for expanding details in a blog post.', tags: ['Blog', 'Outline'] }
+]
 
-    <label>When do you need rental financing?</label>
-    <input type="date" id="renewalDate" />
+export default function SearchAtlasPrototype() {
+  const [query, setQuery] = useState('')
+  const [activeTags, setActiveTags] = useState(new Set())
+  const [selected, setSelected] = useState(null)
+  const [showEditor, setShowEditor] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(true)
 
-    <label>Repayment Period</label>
-    <select id="repaymentPeriod">
-      <option value="">Select Period</option>
-      <option value="6">6 months</option>
-      <option value="9">9 months</option>
-      <option value="12">12 months</option>
-    </select>
+  const allTags = useMemo(() => {
+    const s = new Set()
+    TEMPLATES.forEach(t => t.tags.forEach(tag => s.add(tag)))
+    return Array.from(s)
+  }, [])
 
-    <label>Email</label>
-    <input type="email" id="email" placeholder="you@example.com" />
-
-    <button onclick="handleSubmit()">Calculate</button>
-
-    <div id="error" style="color: red;"></div>
-    <div id="result" class="result" style="display: none;"></div>
-    <div id="warning" class="warning" style="display: none;"></div>
-  </div>
-
-  <script>
-    function formatCurrency(value) {
-      return '₦' + value.toLocaleString();
-    }
-
-    function updateMaxLoanHint() {
-      const salary = parseFloat(document.getElementById('salary').value);
-      const hintDiv = document.getElementById('salaryHint');
-      if (!isNaN(salary)) {
-        const maxLoan = salary * 2.5;
-        hintDiv.textContent = `You can request up to ${formatCurrency(maxLoan)}`;
-      } else {
-        hintDiv.textContent = '';
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    return TEMPLATES.filter(t => {
+      if (activeTags.size > 0) {
+        const hasTag = Array.from(activeTags).every(tag => t.tags.includes(tag))
+        if (!hasTag) return false
       }
-    }
+      if (!q) return true
+      return (t.title + ' ' + t.subtitle).toLowerCase().includes(q)
+    })
+  }, [query, activeTags])
 
-    function handleSubmit() {
-      const salary = parseFloat(document.getElementById('salary').value);
-      const requestedAmount = parseFloat(document.getElementById('requestedAmount').value);
-      const renewalDate = document.getElementById('renewalDate').value;
-      const repaymentPeriod = parseInt(document.getElementById('repaymentPeriod').value);
-      const email = document.getElementById('email').value;
+  function toggleTag(tag) {
+    const next = new Set(activeTags)
+    if (next.has(tag)) next.delete(tag)
+    else next.add(tag)
+    setActiveTags(next)
+  }
 
-      const errorDiv = document.getElementById('error');
-      const resultDiv = document.getElementById('result');
-      const warningDiv = document.getElementById('warning');
+  return (
+    <div className="min-h-screen bg-[#0b0f12] text-white font-sans antialiased">
+      <div className="max-w-[1400px] mx-auto p-6">
+        <div className="flex gap-6">
+          {/* Sidebar */}
+          <aside className={`w-64 transition-all ${sidebarOpen ? 'opacity-100' : 'opacity-0 w-0'} hidden md:block`}>
+            <div className="bg-[#08090b] rounded-2xl p-4 h-full shadow-lg border border-[#202326]">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-teal-400 to-blue-600 flex items-center justify-center font-bold">SA</div>
+                <div>
+                  <div className="text-sm font-medium">Search Atlas</div>
+                  <div className="text-xs text-gray-400">AI Dashboard</div>
+                </div>
+              </div>
 
-      errorDiv.textContent = '';
-      resultDiv.style.display = 'none';
-      warningDiv.style.display = 'none';
+              <nav className="space-y-1 text-sm">
+                <SidebarItem label="Content Genius" active />
+                <SidebarItem label="Onpage Audit" />
+                <SidebarItem label="Content Planner" />
+                <SidebarItem label="AI Content Templates" activeSub />
+                <SidebarItem label="Content Rewriting" />
+                <SidebarItem label="Meta Generator" />
+                <SidebarItem label="Reports & Insights" />
+              </nav>
 
-      if (!salary || !requestedAmount || !renewalDate || !repaymentPeriod || !email) {
-        errorDiv.textContent = 'Please fill in all fields correctly.';
-        return;
-      }
+              <div className="mt-6 text-xs text-gray-500">Version 1 • Prototype</div>
+            </div>
+          </aside>
 
-      const interestRates = { 6: 0.24, 9: 0.36, 12: 0.48 };
-      const interest = interestRates[repaymentPeriod];
-      const totalRepayment = requestedAmount * (1 + interest);
-      const monthlyRepayment = totalRepayment / repaymentPeriod;
+          {/* Main content area */}
+          <main className="flex-1">
+            <header className="flex items-start justify-between mb-6">
+              <div>
+                <div className="flex items-center gap-3">
+                  <h1 className="text-2xl font-semibold">AI Content Writer</h1>
+                  <div className="text-sm text-gray-400">Quota: <span className="font-medium text-white">3 uses</span> refreshed every 3 days</div>
+                </div>
+                <p className="text-sm text-gray-400 mt-1 max-w-2xl">Are you looking to get high-quality copy written fast? AI-driven writing tools can help you craft content that is both creative and engaging. This description was written by AI too.</p>
+              </div>
 
-      if (monthlyRepayment > salary * 0.3333) {
-        warningDiv.style.display = 'block';
-        warningDiv.textContent = 'Please note, your loan amount is limited to ensure monthly payments do not exceed 33.33% of your salary.';
-        return;
-      }
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 bg-[#0f1316] px-3 py-2 rounded-lg border border-[#202326]">
+                  <div className="text-xs text-gray-400">AI Settings</div>
+                  <button className="text-sm bg-green-500 px-3 py-1 rounded-md font-medium">All Settings</button>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button className="text-gray-400 hover:text-white">🔔</button>
+                  <button className="text-gray-400 hover:text-white">⚙️</button>
+                  <div className="h-9 w-9 rounded-full bg-gray-600 flex items-center justify-center">M</div>
+                </div>
+              </div>
+            </header>
 
-      const securityDeposit = monthlyRepayment;
+            {/* Search + Tags */}
+            <div className="bg-[#07090b] p-4 rounded-xl border border-[#1f2427] mb-6">
+              <div className="flex gap-4 items-center">
+                <div className="flex-1">
+                  <label className="sr-only">Search templates</label>
+                  <div className="relative">
+                    <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search templates..." className="w-full bg-transparent placeholder-gray-500 px-4 py-3 border border-transparent focus:outline-none focus:ring-0" />
+                    <div className="absolute right-3 top-3 text-gray-500">⌕</div>
+                  </div>
+                </div>
 
-      resultDiv.innerHTML = `
-        <p><strong>Requested Amount:</strong> ${formatCurrency(requestedAmount)}</p>
-        <p><strong>Monthly Repayment:</strong> ${formatCurrency(monthlyRepayment)} / month</p>
-        <p><strong>Security Deposit:</strong> ${formatCurrency(securityDeposit)} <span title='This is refundable and equivalent to one month of your rent.'>🛈</span></p>
-        <button style='margin-top: 1rem;'>Sign up and access financing now</button>
-      `;
-      resultDiv.style.display = 'block';
-    }
-  </script>
-</body>
-</html>
+                <div className="flex items-center gap-3">
+                  <div className="text-sm text-gray-400">All</div>
+                  <button onClick={() => { setActiveTags(new Set()) }} className="text-sm text-white bg-[#304054] px-3 py-2 rounded-md">Reset</button>
+                </div>
+              </div>
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                {allTags.map(tag => (
+                  <button key={tag} onClick={() => toggleTag(tag)} className={`px-3 py-1 rounded-full text-sm ${activeTags.has(tag) ? 'bg-white text-black font-semibold' : 'bg-[#121517] text-gray-300'}`}>{tag}</button>
+                ))}
+                <div className="ml-2 text-xs text-gray-500 flex items-center gap-2">| Categories</div>
+              </div>
+            </div>
+
+            {/* Template grid */}
+            <section>
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {filtered.map(t => (
+                  <motion.div
+                    key={t.id}
+                    whileHover={{ y: -6 }}
+                    className={`rounded-xl p-4 border border-[#1f2427] bg-[#090b0c] cursor-pointer shadow-sm ${t.highlight ? 'col-span-1 md:col-span-2 lg:col-span-2' : ''}`}
+                    onClick={() => { setSelected(t); setShowEditor(false) }}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="text-sm text-gray-400 mb-1">{t.tags[0]}</div>
+                        <div className="text-lg font-semibold">{t.title}</div>
+                        <div className="text-sm text-gray-400 mt-2">{t.subtitle}</div>
+                      </div>
+
+                      <div className="h-16 w-24 bg-gradient-to-br from-gray-700 to-gray-900 rounded-md flex items-center justify-center text-xs">Preview</div>
+                    </div>
+
+                    <div className="mt-4 flex items-center justify-between">
+                      <div className="text-xs text-gray-400">Template</div>
+                      <button className="text-sm bg-[#1f6feb] px-3 py-1 rounded-md text-white" onClick={(e) => { e.stopPropagation(); setSelected(t); setShowEditor(true) }}>Try this template</button>
+                    </div>
+                  </motion.div>
+                ))}
+
+                {filtered.length === 0 && (
+                  <div className="col-span-full p-6 text-center text-gray-400 bg-[#08090b] rounded-xl border border-[#202326]">No templates found — try a different search or reset filters.</div>
+                )}
+              </div>
+            </section>
+          </main>
+
+          {/* Right drawer — template details / editor */}
+          <AnimatePresence>
+            {(selected) && (
+              <motion.aside initial={{ x: 300, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 300, opacity: 0 }} className="w-[420px] p-4 bg-[#07090b] rounded-2xl border border-[#202326]">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <div className="text-sm text-gray-400">{selected.tags[0]}</div>
+                    <div className="text-xl font-semibold">{selected.title}</div>
+                    <div className="text-sm text-gray-400 mt-1">{selected.subtitle}</div>
+                  </div>
+                  <div>
+                    <button className="text-gray-400" onClick={() => { setSelected(null); setShowEditor(false) }}>✕</button>
+                  </div>
+                </div>
+
+                <div className="text-sm text-gray-300 mb-4">This high-level prototype simulates the flow for previewing and trying templates. Click “Try this template” to open a lightweight editor and generate content (simulated).</div>
+
+                <div className="space-y-3">
+                  <div className="text-xs text-gray-400">Use cases</div>
+                  <div className="flex flex-col gap-2">
+                    <div className="rounded-md p-3 bg-[#0b0f12] border border-[#1f2427]">• Example input or prompt area</div>
+                    <div className="rounded-md p-3 bg-[#0b0f12] border border-[#1f2427]">• Options: tone, length, format</div>
+                    <div className="rounded-md p-3 bg-[#0b0f12] border border-[#1f2427]">• Integration links: Figma • Loom • GitLab</div>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex gap-2">
+                  <button className="flex-1 bg-[#1f6feb] py-2 rounded-md font-semibold" onClick={() => setShowEditor(true)}>Open Editor</button>
+                  <button className="flex-1 bg-[#2d2f33] py-2 rounded-md text-gray-300" onClick={() => alert('Added to project — simulated')}>Add to Project</button>
+                </div>
+
+                {/* Lightweight editor simulation */}
+                <AnimatePresence>
+                  {showEditor && (
+                    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 12 }} className="mt-4">
+                      <div className="text-xs text-gray-400 mb-2">Editor</div>
+                      <textarea className="w-full min-h-[160px] p-3 rounded-md bg-[#0b0f12] border border-[#1f2427] text-sm" placeholder="Write a prompt or input here..."></textarea>
+                      <div className="mt-3 flex gap-2">
+                        <button className="flex-1 bg-green-500 py-2 rounded-md font-semibold" onClick={() => alert('Generating content — simulated')}>Generate</button>
+                        <button className="flex-1 bg-[#2d2f33] py-2 rounded-md text-gray-300" onClick={() => setShowEditor(false)}>Close</button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+              </motion.aside>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function SidebarItem({label, active, activeSub}){
+  return (
+    <div className={`flex items-center gap-3 px-3 py-2 rounded-md ${active ? 'bg-[#0f1720] text-white' : 'text-gray-300 hover:bg-[#0b0f12]'}`}>
+      <div className="h-8 w-8 rounded-md bg-[#111214] flex items-center justify-center text-sm font-semibold">{label[0]}</div>
+      <div className="flex-1 text-sm">{label}</div>
+      {activeSub && <div className="text-xs text-gray-400">New</div>}
+    </div>
+  )
+}
